@@ -81,7 +81,7 @@ class Tokenizer {
                 tokens.add(new Token(TokenType.RIGHT_PAREN, ")"));
                 pos++;
             } else {
-                throw new RuntimeException("Invalid character: " + ch);
+                throw new RuntimeException("invalid character: " + ch);
             }
         }
         return tokens;
@@ -168,10 +168,10 @@ class Evaluator {
             case '-': return left - right;
             case '*': return left * right;
             case '/': return left / right;
-            default: throw new RuntimeException("Unknown operator: " + opNode.operator);
+            default: throw new RuntimeException("unknown operator: " + opNode.operator);
             }
         }
-        throw new RuntimeException("Unknown AST node");
+        throw new RuntimeException("unknown AST node");
     }
 }
 
@@ -179,14 +179,13 @@ public class ast {
     public static void main(String[] args) {
         String expression;
         Scanner kb = new Scanner(System.in);
-        System.out.print("in> ");
+        System.out.print("in~> ");
         expression = kb.nextLine();
         Tokenizer tokenizer = new Tokenizer(expression);
         List<Token> tokens = tokenizer.tokenize();
 
         Parser parser = new Parser(tokens);
         ASTNode ast = parser.parse();
-        System.out.println("ast> " + ast);
 
         Evaluator evaluator = new Evaluator();
         int result = evaluator.evaluate(ast);

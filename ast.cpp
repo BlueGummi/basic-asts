@@ -1,5 +1,4 @@
 #include <cctype>
-#include <iomanip>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
@@ -28,7 +27,7 @@ struct Token {
         : type(t) {
         if (t == TokenType::LeftParen || t == TokenType::RightParen) {
         } else {
-            throw std::invalid_argument(std::string("fart fart doo doo poo") + std::to_string(__LINE__) + " " + __FILE__);
+            throw std::invalid_argument(std::string("invalid delimiter kind"));
         }
     }
 };
@@ -37,7 +36,6 @@ class AST {
   public:
     virtual ~AST() = default;
     virtual int evaluate() const = 0;
-    virtual void print(const std::string &prefix, bool is_left) const = 0;
 };
 
 class NumberAST : public AST {
@@ -47,11 +45,6 @@ class NumberAST : public AST {
     NumberAST(int v)
         : value(v) {}
     int evaluate() const override { return value; }
-    void print(const std::string &prefix, bool is_left) const override {
-        std::cout << prefix << (is_left ? "├" : "└") << "┬────┐\n";
-        std::cout << prefix << (is_left ? "│" : " ") << "│ " << std::setw(2) << value << " │\n";
-        std::cout << prefix << (is_left ? "│" : " ") << "└────┘\n";
-    }
 };
 
 class BinaryOpAST : public AST {
@@ -71,22 +64,12 @@ class BinaryOpAST : public AST {
         case '-': return l_val - r_val;
         case '*': return l_val * r_val;
         case '/': return l_val / r_val;
-        default: throw std::invalid_argument(std::string("fart fart doo doo poo") + std::to_string(__LINE__) + " " + __FILE__);
+        default: throw std::invalid_argument(std::string("invalid token `") + op + "`");
         }
-    }
-
-    void print(const std::string &prefix, bool is_left) const override {
-        std::cout << prefix << (is_left ? "├" : "└") << "┬────┐\n";
-        std::cout << prefix << (is_left ? "│" : " ") << "│ " << op << "  │\n";
-        std::cout << prefix << (is_left ? "│" : " ") << "└──┬─┘\n";
-
-        std::string new_prefix = prefix + (is_left ? "│   " : "    ");
-        left->print(new_prefix, true);
-        right->print(new_prefix, false);
     }
 };
 
-std::vector<Token> tokenize(const std::string &expr) {
+std::vector<Token> lex(const std::string &expr) {
     std::vector<Token> tokens;
     size_t i = 0;
     while (i < expr.size()) {
@@ -109,7 +92,7 @@ std::vector<Token> tokenize(const std::string &expr) {
         } else if (std::isspace(expr[i])) {
             i++;
         } else {
-            throw std::runtime_error(std::string("Unknown character: ") + expr[i]);
+            throw std::runtime_error(std::string("unknown character") + expr[i]);
         }
     }
     return tokens;
@@ -143,7 +126,7 @@ std::unique_ptr<AST> parse(const std::vector<Token> &tokens) {
                 operator_stack.pop_back();
 
                 if (output_stack.size() < 2) {
-                    throw std::runtime_error("Invalid expression");
+                    throw std::runtime_error("invalid expression");
                 }
 
                 auto right = std::move(output_stack.back());
@@ -164,13 +147,13 @@ std::unique_ptr<AST> parse(const std::vector<Token> &tokens) {
         case TokenType::RightParen: {
             while (!operator_stack.empty() && operator_stack.back().type != TokenType::LeftParen) {
                 if (operator_stack.back().type != TokenType::Operator) {
-                    throw std::runtime_error("Invalid operator stack state");
+                    throw std::runtime_error("invalid operator stack state");
                 }
                 char op = operator_stack.back().op;
                 operator_stack.pop_back();
 
                 if (output_stack.size() < 2) {
-                    throw std::runtime_error("Invalid expression");
+                    throw std::runtime_error("invalid expression");
                 }
 
                 auto right = std::move(output_stack.back());
@@ -182,9 +165,9 @@ std::unique_ptr<AST> parse(const std::vector<Token> &tokens) {
                     std::make_unique<BinaryOpAST>(op, std::move(left), std::move(right)));
             }
             if (operator_stack.empty()) {
-                throw std::runtime_error("Mismatched parentheses");
+                throw std::runtime_error("mismatched parentheses");
             }
-            operator_stack.pop_back(); // l paren
+            operator_stack.pop_back(); 
             break;
         }
         }
@@ -192,13 +175,13 @@ std::unique_ptr<AST> parse(const std::vector<Token> &tokens) {
 
     while (!operator_stack.empty()) {
         if (operator_stack.back().type != TokenType::Operator) {
-            throw std::runtime_error("Mismatched parentheses");
+            throw std::runtime_error("mismatched parentheses");
         }
         char op = operator_stack.back().op;
         operator_stack.pop_back();
 
         if (output_stack.size() < 2) {
-            throw std::runtime_error("Invalid expression");
+            throw std::runtime_error("invalid expression");
         }
 
         auto right = std::move(output_stack.back());
@@ -211,7 +194,7 @@ std::unique_ptr<AST> parse(const std::vector<Token> &tokens) {
     }
 
     if (output_stack.size() != 1) {
-        throw std::runtime_error("Invalid expression");
+        throw std::runtime_error("invalid expression");
     }
 
     return std::move(output_stack.back());
@@ -219,14 +202,12 @@ std::unique_ptr<AST> parse(const std::vector<Token> &tokens) {
 
 int main() {
     std::string expr;
-    std::cout << "in> ";
+    std::cout << "in~> ";
     std::getline(std::cin, expr);
     try {
-        auto tokens = tokenize(expr);
+        auto tokens = lex(expr);
         auto ast = parse(tokens);
         int result = ast->evaluate();
-        std::cout << "ast>" << std::endl;
-        ast->print("", false);
         std::cout << "out> " << result << std::endl;
     } catch (const std::exception &e) {
         std::cerr << "err> " << e.what() << std::endl;

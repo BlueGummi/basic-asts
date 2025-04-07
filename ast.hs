@@ -81,7 +81,7 @@ parseExpr = parse (whiteSpace >> expr <* eof) "<input>"
 
 main :: IO ()
 main = do
-  putStr "in> "
+  putStr "in~> "
   hFlush stdout
   input <- getLine
   case parseExpr input of

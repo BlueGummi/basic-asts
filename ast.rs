@@ -5,6 +5,7 @@ enum Token {
     LeftParen,
     RightParen,
 }
+
 #[derive(Debug)]
 enum AST {
     Number(i32),
@@ -14,7 +15,8 @@ enum AST {
         right: Box<AST>,
     },
 }
-fn tokenize(expr: &str) -> Vec<Token> {
+
+fn lex(expr: &str) -> Result<Vec<Token>, String> {
     let mut tokens = Vec::new();
     let mut chars = expr.chars().peekable();
 
@@ -43,11 +45,11 @@ fn tokenize(expr: &str) -> Vec<Token> {
             ' ' => {
                 chars.next();
             }
-            _ => panic!("Unknown character: {}", ch),
+            _ => return Err(format!("unknown character: {}", ch)),
         }
     }
 
-    tokens
+    Ok(tokens)
 }
 fn parse(tokens: &[Token]) -> AST {
     let mut output_stack: Vec<AST> = Vec::new();
@@ -113,30 +115,43 @@ fn parse(tokens: &[Token]) -> AST {
 
     output_stack.pop().unwrap()
 }
-fn evaluate(ast: &AST) -> i32 {
+fn evaluate(ast: &AST) -> Result<i32, String> {
     match ast {
-        AST::Number(n) => *n,
+        AST::Number(n) => Ok(*n),
         AST::BinaryOp { op, left, right } => {
-            let left_val = evaluate(left);
-            let right_val = evaluate(right);
+            let left_val = evaluate(left).unwrap_or_else(|e| {
+                println!("err> {e}");
+                std::process::exit(1)
+            });
+            let right_val = evaluate(right).unwrap_or_else(|e| {
+                println!("err> {e}");
+                std::process::exit(1)
+            });
             match op {
-                '+' => left_val + right_val,
-                '-' => left_val - right_val,
-                '*' => left_val * right_val,
-                '/' => left_val / right_val,
-                _ => panic!("Unknown operator"),
+                '+' => Ok(left_val + right_val),
+                '-' => Ok(left_val - right_val),
+                '*' => Ok(left_val * right_val),
+                '/' => Ok(left_val / right_val),
+                _ => Err(String::from("unknown operator")),
             }
         }
     }
 }
 fn main() {
     let mut expression = String::new();
-    print!("in> ");
+    print!("in~> ");
     use std::io::Write;
     std::io::stdout().flush().unwrap();
     std::io::stdin().read_line(&mut expression).unwrap();
-    let tokens = tokenize(&expression[..expression.len() - 1]); // - 1 cuts off newline
+
+    let tokens = lex(&expression[..expression.len() - 1]).unwrap_or_else(|e| {
+        println!("err> {e}");
+        std::process::exit(1)
+    });
     let ast = parse(&tokens);
-    let result = evaluate(&ast);
+    let result = evaluate(&ast).unwrap_or_else(|e| {
+        println!("err> {e}");
+        std::process::exit(1)
+    });
     println!("out> {}", result);
 }

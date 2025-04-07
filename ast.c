@@ -35,13 +35,13 @@ typedef struct AST {
     } value;
 } AST;
 
-Token *tokenize(const char *expr, int *token_count);
+Token *lex(const char *expr, int *token_count);
 AST *parse(Token *tokens, int token_count);
 int evaluate(AST *ast);
 void print_ast(AST *ast, const char *prefix, int is_left);
 void free_ast(AST *ast);
 
-Token *tokenize(const char *expr, int *token_count) {
+Token *lex(const char *expr, int *token_count) {
     Token *tokens = malloc(strlen(expr) * sizeof(Token));
     int count = 0;
     const char *p = expr;
@@ -72,7 +72,7 @@ Token *tokenize(const char *expr, int *token_count) {
         } else if (isspace(*p)) {
             p++;
         } else {
-            fprintf(stderr, "Unknown character: %c\n", *p);
+            fprintf(stderr, "err> unknown character: %c\n", *p);
             exit(1);
         }
     }
@@ -175,27 +175,10 @@ int evaluate(AST *ast) {
         case '-': return left_val - right_val;
         case '*': return left_val * right_val;
         case '/': return left_val / right_val;
-        default: fprintf(stderr, "Unknown operator\n"); exit(1);
+        default: fprintf(stderr, "err> unknown operator %c\n", ast->value.binary_op.op); exit(1);
         }
     }
-    default: fprintf(stderr, "Unknown AST type\n"); exit(1);
-    }
-}
-
-void print_ast(AST *ast, const char *prefix, int is_left) {
-    if (ast->type == AST_BINARY_OP) {
-        printf("%s%s┬────┐\n", prefix, is_left ? "├" : "└");
-        printf("%s%s│ %c  │\n", prefix, is_left ? "│" : " ", ast->value.binary_op.op);
-        printf("%s%s└──┬─┘\n", prefix, is_left ? "│" : " ");
-
-        char new_prefix[256];
-        snprintf(new_prefix, sizeof(new_prefix), "%s%s", prefix, is_left ? "│   " : "    ");
-        print_ast(ast->value.binary_op.left, new_prefix, 1);
-        print_ast(ast->value.binary_op.right, new_prefix, 0);
-    } else if (ast->type == AST_NUMBER) {
-        printf("%s%s┬────┐\n", prefix, is_left ? "├" : "└");
-        printf("%s%s│ %2d │\n", prefix, is_left ? "│" : " ", ast->value.number);
-        printf("%s%s└────┘\n", prefix, is_left ? "│" : " ");
+    default: fprintf(stderr, "err> unknown AST type\n"); exit(1);
     }
 }
 
@@ -209,16 +192,22 @@ void free_ast(AST *ast) {
 
 int main() {
     char expression[500] = {0};
-    printf("in> ");
+    printf("in~> ");
     fflush(stdout);
-    fgets(expression, sizeof(expression), stdin);
+    if (fgets(expression, sizeof(expression), stdin) == NULL) {
+        printf("err> read error\n");
+        exit(1);
+    }
+    if (strcmp(expression, "\n") == 0) {
+        printf("err> invalid expression\n");
+        exit(1);
+    }
+
     int token_count;
-    Token *tokens = tokenize(expression, &token_count);
+    Token *tokens = lex(expression, &token_count);
     AST *ast = parse(tokens, token_count);
     int result = evaluate(ast);
 
-    printf("ast>\n");
-    print_ast(ast, "", 0);
     printf("out> %d\n", result);
 
     free_ast(ast);

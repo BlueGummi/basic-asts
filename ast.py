@@ -232,7 +232,7 @@ class Interpreter(NodeVisitor):
 
 def main():
     try:
-        text = input("in> ")
+        text = input("in~> ")
     except EOFError:
         exit(1)
 
