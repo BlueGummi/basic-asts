@@ -202,7 +202,7 @@ std::unique_ptr<AST> parse(const std::vector<Token> &tokens) {
 
 int main() {
     std::string expr;
-    std::cout << "in~> ";
+    std::cout << "in> ";
     std::getline(std::cin, expr);
     try {
         auto tokens = lex(expr);

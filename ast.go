@@ -222,7 +222,7 @@ func (p *Parser) parsePrimary() Node {
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Print("in~> ")
+	fmt.Print("in> ")
 	input, err := reader.ReadString('\n')
 	if err != nil {
 		fmt.Println("err> ", err)

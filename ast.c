@@ -192,7 +192,7 @@ void free_ast(AST *ast) {
 
 int main() {
     char expression[500] = {0};
-    printf("in~> ");
+    printf("in> ");
     fflush(stdout);
     if (fgets(expression, sizeof(expression), stdin) == NULL) {
         printf("err> read error\n");

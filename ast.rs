@@ -139,7 +139,7 @@ fn evaluate(ast: &AST) -> Result<i32, String> {
 }
 fn main() {
     let mut expression = String::new();
-    print!("in~> ");
+    print!("in> ");
     use std::io::Write;
     std::io::stdout().flush().unwrap();
     std::io::stdin().read_line(&mut expression).unwrap();

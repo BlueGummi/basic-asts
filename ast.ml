@@ -32,7 +32,7 @@ let rec lexer (s : string) (pos : int) : token list =
           FLOAT (float_of_string num_str) :: lexer s new_pos
         else
           INT (int_of_string num_str) :: lexer s new_pos
-    | _ -> failwith ("unexpected character: " ^ String.make 1 s.[pos])
+    | _ -> failwith ("unexpected character " ^ String.make 1 s.[pos])
 
 and read_number s pos =
   let len = String.length s in

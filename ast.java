@@ -179,7 +179,7 @@ public class ast {
     public static void main(String[] args) {
         String expression;
         Scanner kb = new Scanner(System.in);
-        System.out.print("in~> ");
+        System.out.print("in> ");
         expression = kb.nextLine();
         Tokenizer tokenizer = new Tokenizer(expression);
         List<Token> tokens = tokenizer.tokenize();

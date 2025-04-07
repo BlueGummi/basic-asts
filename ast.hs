@@ -81,11 +81,10 @@ parseExpr = parse (whiteSpace >> expr <* eof) "<input>"
 
 main :: IO ()
 main = do
-  putStr "in~> "
+  putStr "in> "
   hFlush stdout
   input <- getLine
   case parseExpr input of
     Left err -> putStrLn $ "err> " ++ show err
     Right ast -> do
-      putStrLn $ "ast> " ++ show ast
       putStrLn $ "out> " ++ show (eval ast)
