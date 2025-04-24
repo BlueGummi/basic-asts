@@ -230,7 +230,7 @@ func main() {
 
 	input = strings.TrimSpace(input)
 	if input == "" {
-	    os.Exit(0)
+		os.Exit(0)
 	}
 
 	lexer := NewLexer(input)

@@ -25,8 +25,7 @@ struct Token {
         : type(TokenType::Operator), op(op) {}
     Token(TokenType t)
         : type(t) {
-        if (t == TokenType::LeftParen || t == TokenType::RightParen) {
-        } else {
+        if (t != TokenType::LeftParen && t != TokenType::RightParen) {
             throw std::invalid_argument(std::string("invalid delimiter kind"));
         }
     }
@@ -92,7 +91,7 @@ std::vector<Token> lex(const std::string &expr) {
         } else if (std::isspace(expr[i])) {
             i++;
         } else {
-            throw std::runtime_error(std::string("unknown character") + expr[i]);
+            throw std::runtime_error(std::string("unknown character: ") + expr[i]);
         }
     }
     return tokens;
@@ -167,7 +166,7 @@ std::unique_ptr<AST> parse(const std::vector<Token> &tokens) {
             if (operator_stack.empty()) {
                 throw std::runtime_error("mismatched parentheses");
             }
-            operator_stack.pop_back(); 
+            operator_stack.pop_back();
             break;
         }
         }

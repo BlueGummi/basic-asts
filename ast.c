@@ -58,7 +58,7 @@ Token *lex(const char *expr, int *token_count) {
             count++;
         } else if (*p == '+' || *p == '-' || *p == '*' || *p == '/') {
             tokens[count].type = TOKEN_OPERATOR;
-            tokens[count].value.operator= * p;
+            tokens[count].value.operator = *p;
             count++;
             p++;
         } else if (*p == '(') {
